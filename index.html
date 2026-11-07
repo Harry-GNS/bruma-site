@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="BRUMA. Escribe antes de que se disuelva. Un espacio de escritura libre con temporizador, sin cuentas y sin estadísticas.">
+</head>
+<body>
+<title>BRUMA.</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* Concepto: un formulario mecanografiado. Filas separadas por reglas gruesas, todo alineado a la izquierda,
+   un único momento de enfoque (la marca al cargar y el texto al revelarse). El naranja solo aparece donde pasa algo. */
+:root {
+  --bg: #EDEAE2;
+  --fg: #141311;
+  --muted: #58544C;
+  --accent: #EA4B12;
+  --on-accent: #141311;
+  --veil: rgba(237, 234, 226, 0.95);
+  --display: "Archivo Black", "Arial Black", Impact, sans-serif;
+  --text: "Courier Prime", "Courier New", Courier, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141311;
+    --fg: #EDEAE2;
+    --muted: #A8A398;
+    --accent: #FF5B22;
+    --on-accent: #141311;
+    --veil: rgba(20, 19, 17, 0.95);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141311;
+  --fg: #EDEAE2;
+  --muted: #A8A398;
+  --accent: #FF5B22;
+  --on-accent: #141311;
+  --veil: rgba(20, 19, 17, 0.95);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--text);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+#app { min-height: 100%; display: flex; flex-direction: column; }
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; margin-inline: auto; }
+
+/* Botones */
+.btn {
+  font: inherit; font-weight: 700; color: var(--fg); background: transparent;
+  border: 2px solid var(--fg); border-radius: 0; padding: 0.55rem 1.1rem; min-height: 44px;
+  cursor: pointer; text-align: center;
+}
+.btn:hover { background: var(--fg); color: var(--bg); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled:hover { background: transparent; color: var(--fg); }
+.btn-primary { background: var(--accent); color: var(--on-accent); box-shadow: 6px 6px 0 var(--fg); }
+.btn-primary:hover { background: var(--accent); color: var(--on-accent); transform: translate(2px, 2px); box-shadow: 4px 4px 0 var(--fg); }
+.link-btn {
+  font: inherit; font-weight: 700; color: var(--fg); background: none; border: 0;
+  border-bottom: 2px solid currentColor; padding: 0.5rem 0.25rem; min-height: 44px; cursor: pointer;
+}
+.link-btn:hover { background: var(--fg); color: var(--bg); }
+
+/* Pantalla principal */
+.home { max-width: 78rem; padding-block: clamp(0.5rem, 2vh, 1.25rem) clamp(1.5rem, 5vh, 3rem); }
+.home-top { display: flex; justify-content: flex-end; }
+.mark {
+  font-family: var(--display); font-weight: 400; margin: 0.25rem 0 0;
+  font-size: clamp(4rem, 17vw, 15rem); line-height: 0.82; letter-spacing: -0.045em;
+}
+.mark.first { animation: focus-in 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.mark .dot { color: var(--accent); }
+@keyframes focus-in { from { filter: blur(12px); } to { filter: blur(0); } }
+.slogan { margin: 1.25rem 0 clamp(1.5rem, 5vh, 3rem); font-size: clamp(1.15rem, 2.4vw, 1.75rem); font-weight: 700; max-width: 30ch; text-wrap: balance; }
+
+.setup { border-bottom: 2px solid var(--fg); }
+.row {
+  display: grid; grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr); gap: 0.75rem 2rem;
+  padding-block: 1.25rem; border-top: 2px solid var(--fg); align-items: start;
+}
+.label { display: block; font-weight: 700; padding-top: 0.6rem; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; min-width: 0; }
+.chip {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 4.5rem; padding: 0.4rem 1rem; border: 2px solid var(--fg);
+  font-weight: 700; cursor: pointer; user-select: none;
+}
+.chip input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.chip:hover { box-shadow: inset 0 0 0 2px var(--fg); }
+.chip.is-on { background: var(--fg); color: var(--bg); }
+.chip:has(input:focus-visible) { outline: 3px solid var(--fg); outline-offset: 3px; }
+.custom { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; }
+.custom input {
+  width: 5.5rem; min-height: 44px; font: inherit; font-weight: 700; text-align: center; color: var(--fg);
+  background: transparent; border: 2px solid var(--fg); border-radius: 0; padding: 0.3rem 0.5rem;
+}
+.error { grid-column: 1 / -1; margin: 0; padding: 0.4rem 0 0.4rem 0.9rem; border-left: 6px solid var(--accent); font-weight: 700; }
+
+.toggle { display: flex; gap: 1.25rem; align-items: flex-start; }
+.switch {
+  position: relative; flex: none; width: 5rem; height: 2.75rem; padding: 0; cursor: pointer;
+  border: 2px solid var(--fg); border-radius: 0; background: transparent;
+}
+.switch .knob { position: absolute; top: 3px; left: 3px; width: calc(2.75rem - 10px); height: calc(2.75rem - 10px); background: var(--fg); transition: transform 0.15s; }
+.switch[aria-checked="true"] { background: var(--accent); }
+.switch[aria-checked="true"] .knob { transform: translateX(calc(5rem - 2.75rem)); }
+.toggle-text { margin: 0; color: var(--muted); max-width: 46ch; padding-top: 0.35rem; }
+.row-go .go { grid-column: 2; }
+.btn-go { font-family: var(--display); font-weight: 400; font-size: clamp(1.5rem, 3vw, 2.25rem); letter-spacing: -0.01em; padding: 0.6rem 2.5rem; min-height: 4rem; }
+.note { margin: 1rem 0 0; color: var(--muted); }
+.foot { display: flex; flex-wrap: wrap; gap: 0 1.5rem; margin-top: clamp(1rem, 3vh, 2rem); }
+.foot a { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); font-weight: 700; font-size: 0.95rem; text-decoration: none; border-bottom: 2px solid transparent; }
+.foot a:hover { color: var(--fg); border-bottom-color: currentColor; }
+
+/* Escritura */
+.write {
+  position: fixed; inset: 0; z-index: 1; display: flex; flex-direction: column; background: var(--bg);
+  padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px));
+}
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex: none; padding-block: 0.5rem; border-bottom: 2px solid var(--fg); }
+.clock { font-weight: 700; font-size: 1.6rem; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; min-width: 5.5rem; }
+.clock.low { color: var(--accent); }
+.tag { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 700; }
+.tag i { width: 0.9rem; height: 0.9rem; background: var(--accent); border: 2px solid var(--fg); display: inline-block; }
+.bar-end { min-width: 5.5rem; display: flex; justify-content: flex-end; }
+
+.stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.cloud, .field {
+  position: absolute; inset: 0; margin: 0; border: 0; border-radius: 0; width: 100%; height: 100%;
+  padding: 30vh clamp(1rem, 6vw, 6rem) 55vh;
+  font-family: var(--text); font-size: clamp(1.25rem, 2.2vw, 1.75rem); line-height: 1.55; letter-spacing: 0;
+  white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; tab-size: 4;
+}
+.cloud { overflow: hidden; color: var(--fg); pointer-events: none; }
+.cloud .far { filter: blur(7px); opacity: 0.4; }
+.cloud .n3 { filter: blur(5px); opacity: 0.5; }
+.cloud .n2 { filter: blur(3.5px); opacity: 0.6; }
+.cloud .n1 { filter: blur(2.5px); opacity: 0.75; }
+.cloud .cm { display: inline-block; width: 0; height: 1em; }
+.field {
+  resize: none; background: transparent; color: transparent; -webkit-text-fill-color: transparent;
+  caret-color: var(--accent); caret-shape: block; outline: none; overflow-y: auto; scrollbar-width: none;
+}
+.field::-webkit-scrollbar { display: none; }
+.field::selection { background: var(--accent); }
+.focus { position: absolute; inset: 0; display: grid; place-items: center; padding-inline: 4vw; pointer-events: none; }
+.focus-word {
+  font-weight: 700; line-height: 1; text-align: center; color: var(--fg); overflow-wrap: anywhere; max-width: 100%;
+  text-shadow: 0 0 0.3em var(--bg), 0 0 0.12em var(--bg);
+}
+.hint { position: absolute; left: 0; right: 0; bottom: 2rem; margin: 0; text-align: center; color: var(--muted); transition: opacity 0.3s; pointer-events: none; }
+.hint.off { opacity: 0; }
+.stage.dissolving .cloud, .stage.dissolving .focus { transition: filter 0.9s, opacity 0.9s; filter: blur(30px); opacity: 0; }
+
+.alarm { position: absolute; right: clamp(1rem, 5vw, 4rem); bottom: clamp(0.5rem, 3vh, 2rem); display: none; flex-direction: column; align-items: flex-end; pointer-events: none; }
+.alarm.on { display: flex; }
+.alarm-num { font-family: var(--display); font-size: clamp(7rem, 26vw, 20rem); line-height: 0.8; color: var(--accent); }
+.alarm-text { margin: 0.75rem 0 0; font-weight: 700; text-shadow: 0 0 0.4em var(--bg), 0 0 0.15em var(--bg); }
+
+.veil {
+  position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+  gap: 1.25rem; padding-inline: clamp(1rem, 8vw, 8rem); background: var(--veil);
+}
+.veil.fixed { position: fixed; z-index: 20; }
+.veil p { margin: 0; }
+.big { font-family: var(--display); font-weight: 400; font-size: clamp(3rem, 10vw, 8rem); line-height: 0.9; letter-spacing: -0.04em; margin: 0; }
+.veil-ask { font-size: clamp(1.25rem, 2.6vw, 2rem); font-weight: 700; max-width: 22ch; }
+.veil-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.count-num { font-family: var(--display); font-size: clamp(8rem, 30vw, 22rem); line-height: 0.8; color: var(--accent); }
+
+/* Resultado: el texto es lo principal */
+.review { max-width: 90rem; padding-block: clamp(0.5rem, 2vh, 1rem) clamp(0.75rem, 2vh, 1.25rem); gap: 1rem; }
+.review-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 2rem; }
+.title {
+  font-family: var(--display); font-weight: 400; margin: 0;
+  font-size: clamp(2rem, 4.5vw, 3.75rem); line-height: 0.95; letter-spacing: -0.04em; text-wrap: balance;
+  animation: focus-in 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.title .dot { color: var(--accent); }
+.review-note { margin: 0; font-weight: 700; }
+.result {
+  display: block; flex: 1; width: 100%; min-height: 55vh; border: 2px solid var(--fg); border-radius: 0;
+  background: transparent; color: var(--fg); font-family: var(--text); font-size: clamp(1.2rem, 1.7vw, 1.5rem); line-height: 1.75;
+  padding: clamp(1.25rem, 3.5vw, 3.5rem); resize: none;
+}
+.result.reveal { animation: reveal 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes reveal { from { filter: blur(14px); opacity: 0.25; } to { filter: blur(0); opacity: 1; } }
+.review-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; border-top: 2px solid var(--fg); padding-top: 1rem; }
+.review-bar .spacer { flex: 1; }
+
+/* Popup */
+.modal { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: 1rem; background: rgba(20, 19, 17, 0.6); }
+.modal-box { width: 100%; max-width: 30rem; background: var(--bg); color: var(--fg); border: 2px solid var(--fg); box-shadow: 8px 8px 0 var(--fg); padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.5rem; }
+.modal-box p { margin: 0; font-family: var(--display); font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.1; letter-spacing: -0.02em; }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+/* Regreso al inicio: escritura */
+.home.intro .row { visibility: hidden; }
+.home.intro .row.on { visibility: visible; }
+.home.intro .setup { border-bottom-color: transparent; }
+.home.intro .slogan, .home.intro .toggle-text { text-wrap: wrap; }
+.caret { display: inline-block; width: 0.42em; height: 0.72em; margin-left: 0.04em; background: var(--accent); vertical-align: baseline; animation: blink 0.8s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Texto borrado */
+.gone { max-width: 62rem; justify-content: center; gap: 1.25rem; padding-block: 3rem; align-items: flex-start; }
+.gone p { margin: 0; max-width: 40ch; }
+
+@media (max-width: 40rem) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .label { padding-top: 0; }
+  .row-go .go { grid-column: 1; }
+  .btn-go { width: 100%; }
+  .toggle { flex-direction: column; gap: 0.75rem; }
+  .toggle-text { padding-top: 0; }
+  .bar { gap: 0.5rem; }
+  .clock { font-size: 1.35rem; min-width: 4.5rem; }
+  .bar-end { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div id="app">
+  <section id="home" class="screen home">
+    <div class="home-top">
+      <button id="themeBtn" class="link-btn" type="button">Oscuro</button>
+    </div>
+    <h1 class="mark first">BRUMA<span class="dot">.</span></h1>
+    <p class="slogan">Escribe antes de que se disuelva.</p>
+
+    <form id="setup" class="setup" novalidate>
+      <div class="row">
+        <p class="label" id="timeLabel">Tiempo</p>
+        <div class="chips" role="radiogroup" aria-labelledby="timeLabel">
+          <label class="chip"><input type="radio" name="dur" value="3"><span>3 min</span></label>
+          <label class="chip"><input type="radio" name="dur" value="5" checked><span>5 min</span></label>
+          <label class="chip"><input type="radio" name="dur" value="10"><span>10 min</span></label>
+          <label class="chip"><input type="radio" name="dur" value="20"><span>20 min</span></label>
+          <label class="chip"><input type="radio" name="dur" value="custom"><span>Otro</span></label>
+          <span class="custom" id="customWrap" hidden>
+            <input id="customMin" type="number" inputmode="numeric" min="1" max="180" step="1" aria-label="Minutos de escritura" placeholder="30">
+            <span aria-hidden="true">min</span>
+          </span>
+        </div>
+        <p class="error" id="timeError" role="alert" hidden>Escribe un número de minutos entre 1 y 180.</p>
+      </div>
+
+      <div class="row">
+        <p class="label" id="insaneLabel">Modo insano</p>
+        <div class="toggle">
+          <button id="insaneSwitch" class="switch" type="button" role="switch" aria-checked="false" aria-labelledby="insaneLabel"><span class="knob"></span></button>
+          <p class="toggle-text" id="insaneDesc">Si dejas de escribir 15 segundos, la sesión y el texto se borran. No se puede pausar.</p>
+        </div>
+      </div>
+
+      <div class="row row-go">
+        <div class="go">
+          <button class="btn btn-primary btn-go" type="submit">Empezar</button>
+          <p class="note">El reloj arranca con tu primera letra.</p>
+        </div>
+      </div>
+    </form>
+
+    <nav class="foot" aria-label="Información">
+      <a href="acerca.html">Acerca</a>
+      <a href="faq.html">Preguntas</a>
+      <a href="privacidad.html">Privacidad</a>
+      <a href="terminos.html">Términos</a>
+      <a href="contacto.html">Contacto</a>
+      <a href="cambios.html">Novedades</a>
+      <a href="apoyo.html">Apoyar</a>
+    </nav>
+  </section>
+
+  <section id="review" class="screen review" hidden>
+    <div class="review-top">
+      <h2 class="title">Se acabó el tiempo<span class="dot">.</span></h2>
+      <p class="review-note">Lee y edita sin límite de tiempo.</p>
+    </div>
+    <label class="sr-only" for="result">Tu texto</label>
+    <textarea id="result" class="result" spellcheck="false"></textarea>
+    <div class="review-bar">
+      <button id="copyBtn" class="btn" type="button">Copiar</button>
+      <button id="dlBtn" class="btn" type="button">Descargar .txt</button>
+      <span class="spacer"></span>
+      <button id="homeBtn" class="btn btn-primary" type="button">Volver al inicio</button>
+    </div>
+  </section>
+
+  <section id="gone" class="screen gone" hidden>
+    <h2 class="big">Se disolvió.</h2>
+    <p>Pasaron 15 segundos sin escribir. La sesión y su texto se borraron.</p>
+    <button id="goneBtn" class="btn btn-primary" type="button">Volver al inicio</button>
+  </section>
+</div>
+
+<section id="write" class="write" hidden>
+  <div class="bar">
+    <div class="clock" id="clock" role="timer" aria-label="Tiempo restante">05:00</div>
+    <div class="tag" id="modeTag" hidden><i aria-hidden="true"></i><span>Modo insano</span></div>
+    <div class="bar-end"><button id="pauseBtn" class="btn" type="button" disabled>Pausar</button></div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="cloud" id="cloud" aria-hidden="true"></div>
+    <textarea id="field" class="field" aria-label="Escribe aquí" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+    <div class="focus" aria-hidden="true"><span class="focus-word" id="focusWord"></span></div>
+    <p class="hint" id="hint">Escribe. El reloj arranca con tu primera letra.</p>
+    <div class="alarm" id="alarm" aria-hidden="true">
+      <span class="alarm-num" id="alarmNum">4</span>
+      <p class="alarm-text">Escribe o se borra todo.</p>
+    </div>
+    <div class="sr-only" id="srAlarm" aria-live="assertive"></div>
+
+    <div class="veil" id="pauseVeil" hidden>
+      <h2 class="big">En pausa</h2>
+      <div class="veil-actions" id="pauseMain">
+        <button id="resumeBtn" class="btn btn-primary" type="button">Continuar</button>
+        <button id="discardBtn" class="link-btn" type="button">Descartar sesión</button>
+      </div>
+      <div id="pauseConfirm" hidden>
+        <p class="veil-ask">Se borrará la sesión y su texto.</p>
+        <div class="veil-actions" style="margin-top:1rem">
+          <button id="discardYes" class="btn" type="button">Borrar y salir</button>
+          <button id="discardNo" class="btn" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="veil" id="countVeil" hidden>
+      <p class="veil-ask">Retomando tu sesión</p>
+      <div class="count-num" id="countNum" aria-live="polite">3</div>
+    </div>
+  </div>
+</section>
+
+<div id="leave" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="leaveText" hidden>
+  <div class="modal-box">
+    <p id="leaveText">Al volver al inicio, el texto se borra.</p>
+    <div class="modal-actions">
+      <button id="homeYes" class="btn btn-primary" type="button">Borrar y volver</button>
+      <button id="homeNo" class="btn" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="recover" class="veil fixed" role="alertdialog" aria-modal="true" aria-labelledby="recoverText" hidden>
+  <p class="veil-ask" id="recoverText">Tienes una sesión pendiente. ¿Deseas continuar?</p>
+  <div class="veil-actions">
+    <button id="recoverYes" class="btn btn-primary" type="button">Continuar</button>
+    <button id="recoverNo" class="btn" type="button">Descartar</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- Configuración ---------- */
+  var CONFIG = { idleMs: 15000, warnMs: 4000, resumeSecs: 3, minMin: 1, maxMin: 180, saveDelay: 300, lowMs: 10000 };
+  var KEY_SESSION = 'bruma:session';
+  var KEY_PREFS = 'bruma:prefs';
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Persistencia ---------- */
+  var Store = (function () {
+    var mem = {};
+    function read(k) {
+      try { var v = window.localStorage.getItem(k); return v ? JSON.parse(v) : (mem[k] ? JSON.parse(mem[k]) : null); }
+      catch (e) { try { return mem[k] ? JSON.parse(mem[k]) : null; } catch (e2) { return null; } }
+    }
+    function write(k, o) {
+      var s = JSON.stringify(o); mem[k] = s;
+      try { window.localStorage.setItem(k, s); } catch (e) { /* queda en memoria */ }
+    }
+    function remove(k) { delete mem[k]; try { window.localStorage.removeItem(k); } catch (e) {} }
+    return { read: read, write: write, remove: remove };
+  })();
+
+  /* ---------- Temporizador principal ---------- */
+  function Clock(cb) { this.cb = cb; this.remaining = 0; this.deadline = 0; this.running = false; this.h = null; }
+  Clock.prototype.left = function () { return this.running ? Math.max(0, this.deadline - Date.now()) : this.remaining; };
+  Clock.prototype.start = function (ms) {
+    var self = this; this.stop();
+    this.remaining = ms; this.deadline = Date.now() + ms; this.running = true;
+    this.h = setInterval(function () { self.tick(); }, 200);
+    this.tick();
+  };
+  Clock.prototype.tick = function () {
+    var l = this.left(); this.cb.onTick(l);
+    if (l <= 0) { this.stop(); this.remaining = 0; this.cb.onEnd(); }
+  };
+  Clock.prototype.pause = function () {
+    if (!this.running) return;
+    this.remaining = this.left(); this.running = false; clearInterval(this.h); this.h = null;
+  };
+  Clock.prototype.resume = function () { this.start(this.remaining); };
+  Clock.prototype.stop = function () { this.running = false; if (this.h) { clearInterval(this.h); this.h = null; } };
+
+  /* ---------- Guardia de inactividad (modo insano) ---------- */
+  function IdleGuard(cb) { this.cb = cb; this.last = 0; this.h = null; this.warned = false; }
+  IdleGuard.prototype.reset = function () {
+    var self = this; this.last = Date.now();
+    if (this.warned) { this.warned = false; this.cb.onClear(); }
+    if (!this.h) this.h = setInterval(function () { self.tick(); }, 150);
+  };
+  IdleGuard.prototype.tick = function () {
+    var left = CONFIG.idleMs - (Date.now() - this.last);
+    if (left <= 0) { this.stop(); this.cb.onExpire(); return; }
+    if (left <= CONFIG.warnMs) { this.warned = true; this.cb.onWarn(Math.ceil(left / 1000)); }
+  };
+  IdleGuard.prototype.stop = function () {
+    if (this.h) { clearInterval(this.h); this.h = null; }
+    if (this.warned) { this.warned = false; this.cb.onClear(); }
+  };
+
+  /* ---------- Presentación del efecto (nube + fragmento nítido) ---------- */
+  var field = $('field'), cloud = $('cloud'), focusWord = $('focusWord');
+  var View = (function () {
+    var last = { v: null, c: -1 }, mark = null;
+    function span(cls, t) { var s = document.createElement('span'); s.className = cls; s.textContent = t; return s; }
+    function splitTail(s) {
+      var parts = [], end = s.length, i, j, k;
+      for (i = 0; i < 3; i++) {
+        j = end; while (j > 0 && /\s/.test(s.charAt(j - 1))) j--;
+        k = j; while (k > 0 && !/\s/.test(s.charAt(k - 1))) k--;
+        if (k === j) break;
+        parts.unshift(s.slice(k, end)); end = k;
+      }
+      return { far: s.slice(0, end), tail: parts };
+    }
+    function token(v, c) { var m = v.slice(0, c).match(/(\S+)\s*$/); return m ? m[1] : ''; }
+    function fit(tok) {
+      var avail = Math.max(120, (focusWord.parentNode.clientWidth || window.innerWidth) * 0.92);
+      var maxPx = Math.min(window.innerWidth * 0.16, 170);
+      var size = Math.max(26, Math.min(maxPx, avail / (Math.max(tok.length, 1) * 0.62)));
+      focusWord.style.fontSize = size + 'px';
+    }
+    function recenter() {
+      var h = field.clientHeight; if (!mark || !h) return;
+      var y = mark.offsetTop - field.scrollTop;
+      if (y > h * 0.5 + 2) field.scrollTop = mark.offsetTop - h * 0.5;
+      else if (y < h * 0.12) field.scrollTop = Math.max(0, mark.offsetTop - h * 0.5);
+      cloud.scrollTop = field.scrollTop;
+    }
+    function render(force) {
+      var v = field.value, c = field.selectionStart;
+      if (!force && v === last.v && c === last.c) return;
+      last.v = v; last.c = c;
+      var head = v.slice(0, c), rest = v.slice(c), sp = splitTail(head), i;
+      var f = document.createDocumentFragment();
+      f.appendChild(span('far', sp.far));
+      for (i = 0; i < sp.tail.length; i++) f.appendChild(span('n' + (sp.tail.length - i), sp.tail[i]));
+      var m = document.createElement('span'); m.className = 'cm'; f.appendChild(m);
+      f.appendChild(span('far', rest + '​'));
+      cloud.textContent = ''; cloud.appendChild(f); mark = m;
+      var tok = token(v, c); focusWord.textContent = tok; fit(tok);
+      recenter();
+    }
+    function reset() { last = { v: null, c: -1 }; mark = null; cloud.textContent = ''; focusWord.textContent = ''; field.scrollTop = 0; cloud.scrollTop = 0; }
+    field.addEventListener('scroll', function () { cloud.scrollTop = field.scrollTop; });
+    window.addEventListener('resize', function () { render(true); });
+    document.addEventListener('selectionchange', function () { if (document.activeElement === field) render(false); });
+    return { render: render, reset: reset };
+  })();
+
+  /* ---------- Regreso al inicio: escritura ---------- */
+  var Intro = (function () {
+    var home = $('home'), raf = 0, run = null;
+    function nodesOf(el) {
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), out = [], n;
+      while ((n = w.nextNode())) { if (n.nodeValue.trim()) out.push(n); }
+      return out;
+    }
+    function finish() {
+      if (!run) return;
+      cancelAnimationFrame(raf);
+      run.items.forEach(function (it) { it.node.nodeValue = it.full; });
+      if (run.caret.parentNode) run.caret.parentNode.removeChild(run.caret);
+      home.classList.remove('intro');
+      run.rows.forEach(function (r) { r.el.classList.remove('on'); });
+      home.removeAttribute('aria-busy');
+      run = null;
+    }
+    function cancel() { finish(); }
+    function play() {
+      var mark = home.querySelector('.mark');
+      mark.classList.remove('first');
+      if (reduced) return;
+      cancel();
+      var items = [], rows = [];
+      function add(el, start, speed) {
+        nodesOf(el).forEach(function (n) {
+          var full = n.nodeValue;
+          items.push({ node: n, full: full, start: start, speed: speed, n: -1 });
+          start += full.length * speed;
+        });
+        return start;
+      }
+      var t = add(mark, 200, 130);
+      t = add(home.querySelector('.slogan'), t + 150, 26);
+      var base = t + 150;
+      Array.prototype.forEach.call(home.querySelectorAll('.row'), function (row, i) {
+        var start = base + i * 650, k = 0;
+        rows.push({ el: row, start: start });
+        Array.prototype.forEach.call(row.querySelectorAll('.label, .chip > span, .toggle-text, .btn-go, .note'), function (el) {
+          add(el, start + 120 + k * 70, el.classList.contains('toggle-text') ? 12 : 40); k++;
+        });
+      });
+      var end = 0;
+      items.forEach(function (it) { end = Math.max(end, it.start + it.full.length * it.speed); });
+      end += 250;
+      var caret = document.createElement('span'); caret.className = 'caret';
+      home.classList.add('intro'); home.setAttribute('aria-busy', 'true');
+      items.forEach(function (it) { it.node.nodeValue = ''; });
+      mark.appendChild(caret);
+      run = { items: items, rows: rows, caret: caret };
+      var t0 = performance.now();
+      function tick(now) {
+        var e = now - t0;
+        items.forEach(function (it) {
+          var n = Math.max(0, Math.min(it.full.length, Math.floor((e - it.start) / it.speed)));
+          if (it.n !== n) { it.n = n; it.node.nodeValue = it.full.slice(0, n); }
+        });
+        rows.forEach(function (r) { if (e >= r.start) r.el.classList.add('on'); });
+        if (e >= end) finish(); else raf = requestAnimationFrame(tick);
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    return { play: play, cancel: cancel };
+  })();
+
+  /* ---------- Elementos ---------- */
+  var screens = { home: $('home'), write: $('write'), review: $('review'), gone: $('gone') };
+  var clockEl = $('clock'), hint = $('hint'), pauseBtn = $('pauseBtn'), modeTag = $('modeTag');
+  var alarm = $('alarm'), alarmNum = $('alarmNum'), srAlarm = $('srAlarm'), stage = $('stage');
+  var pauseVeil = $('pauseVeil'), pauseMain = $('pauseMain'), pauseConfirm = $('pauseConfirm');
+  var countVeil = $('countVeil'), countNum = $('countNum');
+  var result = $('result'), copyBtn = $('copyBtn'), dlBtn = $('dlBtn');
+  var recover = $('recover'), app = $('app');
+
+  function show(name) {
+    Intro.cancel();
+    Object.keys(screens).forEach(function (k) { screens[k].hidden = (k !== name); });
+    window.scrollTo(0, 0);
+  }
+  function fmt(ms) {
+    var s = Math.ceil(ms / 1000), m = Math.floor(s / 60), r = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  /* ---------- Sesión ---------- */
+  var S = null, saveT = null, lastSec = -1;
+  var clock = new Clock({ onTick: onTick, onEnd: finishWriting });
+  var guard = new IdleGuard({
+    onWarn: function (n) {
+      alarm.classList.add('on'); alarmNum.textContent = n; srAlarm.textContent = 'Se borrará todo en ' + n;
+    },
+    onClear: function () { alarm.classList.remove('on'); srAlarm.textContent = ''; },
+    onExpire: dissolve
+  });
+
+  function snapshot() {
+    return { v: 1, mode: S.mode, durationMs: S.durationMs, remainingMs: S.remainingMs, started: S.started, phase: S.phase, text: S.text };
+  }
+  function persist() { if (S) Store.write(KEY_SESSION, snapshot()); }
+  function persistSoon() { clearTimeout(saveT); saveT = setTimeout(persist, CONFIG.saveDelay); }
+  function flush() {
+    if (!S) return;
+    if (S.phase === 'writing') { S.text = field.value; if (clock.running) S.remainingMs = clock.left(); }
+    else if (S.phase === 'review') { S.text = result.value; }
+    clearTimeout(saveT); persist();
+  }
+  function clearSession() { clearTimeout(saveT); clock.stop(); guard.stop(); Store.remove(KEY_SESSION); S = null; }
+
+  function onTick(ms) {
+    clockEl.textContent = fmt(ms);
+    clockEl.classList.toggle('low', ms <= CONFIG.lowMs);
+    if (!S) return;
+    S.remainingMs = ms;
+    var sec = Math.ceil(ms / 1000);
+    if (sec !== lastSec) { lastSec = sec; S.text = field.value; persist(); }
+  }
+
+  function openWrite(restored) {
+    show('write');
+    field.value = S.text; field.readOnly = false;
+    View.reset(); View.render(true);
+    clockEl.textContent = fmt(S.remainingMs); clockEl.classList.remove('low');
+    modeTag.hidden = S.mode !== 'insano';
+    pauseBtn.hidden = S.mode === 'insano';
+    pauseBtn.disabled = !S.started;
+    hint.classList.toggle('off', S.started);
+    alarm.classList.remove('on'); srAlarm.textContent = '';
+    pauseVeil.hidden = true; countVeil.hidden = true; lastSec = -1;
+    if (!restored) field.focus();
+  }
+
+  function startSession(min, insane) {
+    Store.remove(KEY_SESSION);
+    S = { v: 1, mode: insane ? 'insano' : 'normal', durationMs: min * 60000, remainingMs: min * 60000, started: false, phase: 'writing', text: '' };
+    openWrite(false);
+  }
+
+  function onInput() {
+    if (!S || S.phase !== 'writing') return;
+    if (!S.started && field.value.length > 0) {
+      S.started = true; hint.classList.add('off'); pauseBtn.disabled = false;
+      clock.start(S.remainingMs);
+    }
+    if (S.mode === 'insano' && S.started) guard.reset();
+    S.text = field.value; View.render(false); persistSoon();
+  }
+  field.addEventListener('input', onInput);
+
+  function finishWriting() {
+    if (!S) return;
+    guard.stop(); clock.stop();
+    S.text = field.value; S.phase = 'review'; S.remainingMs = 0; persist();
+    showReview(true);
+  }
+
+  function showReview(reveal) {
+    result.value = S.text;
+    show('review');
+    closeLeave();
+    result.classList.remove('reveal');
+    if (reveal && !reduced) {
+      void result.offsetWidth;
+      result.classList.add('reveal');
+      result.addEventListener('animationend', function h() { result.classList.remove('reveal'); result.removeEventListener('animationend', h); });
+    }
+  }
+  result.addEventListener('input', function () { if (S) { S.text = result.value; persistSoon(); } });
+
+  function dissolve() {
+    if (!S) return;
+    clock.stop(); guard.stop(); field.readOnly = true;
+    Store.remove(KEY_SESSION); clearTimeout(saveT); S = null;
+    stage.classList.add('dissolving');
+    setTimeout(function () {
+      stage.classList.remove('dissolving'); field.value = ''; View.reset();
+      show('gone'); $('goneBtn').focus();
+    }, reduced ? 0 : 1000);
+  }
+
+  /* Pausa (solo modo normal) */
+  pauseBtn.addEventListener('click', function () {
+    if (!S || !S.started || !clock.running) return;
+    clock.pause(); S.remainingMs = clock.remaining; flush();
+    field.readOnly = true; pauseConfirm.hidden = true; pauseMain.hidden = false; pauseVeil.hidden = false;
+    $('resumeBtn').focus();
+  });
+  $('resumeBtn').addEventListener('click', function () {
+    pauseVeil.hidden = true; field.readOnly = false; clock.resume(); field.focus();
+  });
+  $('discardBtn').addEventListener('click', function () { pauseMain.hidden = true; pauseConfirm.hidden = false; $('discardNo').focus(); });
+  $('discardNo').addEventListener('click', function () { pauseConfirm.hidden = true; pauseMain.hidden = false; $('resumeBtn').focus(); });
+  $('discardYes').addEventListener('click', function () { clearSession(); field.value = ''; View.reset(); goHome(); });
+
+  /* Recuperación */
+  function pending() {
+    var p = Store.read(KEY_SESSION);
+    if (!p || p.v !== 1 || typeof p.text !== 'string' || p.text.length === 0) return null;
+    if (p.phase === 'writing' && !p.started) return null;
+    return p;
+  }
+  function openRecover() { app.inert = true; recover.hidden = false; $('recoverYes').focus(); }
+  function closeRecover() { recover.hidden = true; app.inert = false; }
+  $('recoverNo').addEventListener('click', function () { Store.remove(KEY_SESSION); closeRecover(); goHome(); });
+  $('recoverYes').addEventListener('click', function () {
+    var p = Store.read(KEY_SESSION); closeRecover();
+    if (!p) { goHome(); return; }
+    S = p;
+    if (S.phase === 'review') { showReview(false); return; }
+    resumeWriting();
+  });
+  function resumeWriting() {
+    openWrite(true);
+    field.readOnly = true; pauseBtn.disabled = true;
+    var n = CONFIG.resumeSecs;
+    countNum.textContent = n; countVeil.hidden = false;
+    var h = setInterval(function () {
+      n--;
+      if (n > 0) { countNum.textContent = n; return; }
+      clearInterval(h);
+      countVeil.hidden = true; field.readOnly = false; pauseBtn.disabled = false;
+      field.focus(); field.setSelectionRange(field.value.length, field.value.length);
+      View.render(true);
+      if (S.remainingMs <= 0) { finishWriting(); return; }
+      clock.start(S.remainingMs);
+      if (S.mode === 'insano') guard.reset();
+    }, 1000);
+  }
+
+  /* Resultado: copiar, descargar, volver */
+  var flashT = {};
+  function flash(btn, label, original) {
+    btn.textContent = label; clearTimeout(flashT[btn.id]);
+    flashT[btn.id] = setTimeout(function () { btn.textContent = original; }, 1800);
+  }
+  function fallbackCopy() {
+    result.focus(); result.select();
+    try { return document.execCommand('copy'); } catch (e) { return false; }
+  }
+  copyBtn.addEventListener('click', function () {
+    var t = result.value;
+    if (!t) { flash(copyBtn, 'Sin texto', 'Copiar'); return; }
+    var ok = function () { flash(copyBtn, 'Copiado', 'Copiar'); };
+    var fail = function () { if (fallbackCopy()) ok(); else flash(copyBtn, 'Selecciona y copia con Ctrl+C', 'Copiar'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fail); else fail();
+  });
+  function stamp() {
+    var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes());
+  }
+  function anchorDownload(name, text) {
+    var url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 500);
+  }
+  dlBtn.addEventListener('click', function () {
+    var text = result.value, name = 'bruma-' + stamp() + '.txt';
+    if (!text) { flash(dlBtn, 'Sin texto', 'Descargar .txt'); return; }
+    var viewerCap = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('downloads') : Promise.resolve(null);
+    viewerCap.then(function (dl) {
+      if (dl) return dl.save({ filename: name, data: text }).then(function () { flash(dlBtn, 'Descargado', 'Descargar .txt'); });
+      anchorDownload(name, text); flash(dlBtn, 'Descargado', 'Descargar .txt');
+    }).catch(function (err) {
+      if (err && err.code === 'declined') return;
+      anchorDownload(name, text);
+    });
+  });
+  var leave = $('leave');
+  function closeLeave() { leave.hidden = true; app.inert = false; }
+  $('homeBtn').addEventListener('click', function () { app.inert = true; leave.hidden = false; $('homeNo').focus(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !leave.hidden) { closeLeave(); $('homeBtn').focus(); } });
+  $('homeNo').addEventListener('click', function () { closeLeave(); $('homeBtn').focus(); });
+  $('homeYes').addEventListener('click', function () { closeLeave(); clearSession(); result.value = ''; goHome(); });
+  $('goneBtn').addEventListener('click', goHome);
+
+  function goHome() { show('home'); Intro.play(); }
+
+  /* ---------- Pantalla principal: preferencias y formulario ---------- */
+  var prefs = Store.read(KEY_PREFS) || { choice: '5', custom: '', insane: false, theme: null };
+  var radios = Array.prototype.slice.call(document.querySelectorAll('input[name="dur"]'));
+  var customWrap = $('customWrap'), customMin = $('customMin'), timeError = $('timeError');
+  var insaneSwitch = $('insaneSwitch'), themeBtn = $('themeBtn');
+  function savePrefs() { Store.write(KEY_PREFS, prefs); }
+
+  function syncChips() {
+    var choice = '5';
+    radios.forEach(function (r) { r.parentNode.classList.toggle('is-on', r.checked); if (r.checked) choice = r.value; });
+    customWrap.hidden = choice !== 'custom';
+    return choice;
+  }
+  radios.forEach(function (r) {
+    r.addEventListener('change', function () {
+      var c = syncChips(); prefs.choice = c; savePrefs(); timeError.hidden = true;
+      if (c === 'custom') customMin.focus();
+    });
+  });
+  customMin.addEventListener('input', function () { prefs.custom = customMin.value; savePrefs(); timeError.hidden = true; });
+
+  function setInsane(on) { insaneSwitch.setAttribute('aria-checked', on ? 'true' : 'false'); prefs.insane = on; savePrefs(); }
+  insaneSwitch.addEventListener('click', function () { setInsane(insaneSwitch.getAttribute('aria-checked') !== 'true'); });
+
+  function readMinutes() {
+    var choice = syncChips();
+    if (choice === 'custom') {
+      var n = parseInt(customMin.value, 10);
+      return (isFinite(n) && n >= CONFIG.minMin && n <= CONFIG.maxMin) ? n : null;
+    }
+    return parseInt(choice, 10);
+  }
+  $('setup').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var min = readMinutes();
+    if (!min) { timeError.hidden = false; customMin.focus(); return; }
+    timeError.hidden = true;
+    startSession(min, insaneSwitch.getAttribute('aria-checked') === 'true');
+  });
+
+  /* ---------- Tema ---------- */
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  function currentTheme() {
+    var a = document.documentElement.getAttribute('data-theme');
+    if (a === 'dark' || a === 'light') return a;
+    return (mq && mq.matches) ? 'dark' : 'light';
+  }
+  function themeLabel() {
+    var dark = currentTheme() === 'dark';
+    themeBtn.textContent = dark ? 'Claro' : 'Oscuro';
+    themeBtn.setAttribute('aria-label', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+  }
+  themeBtn.addEventListener('click', function () {
+    var t = currentTheme() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t); prefs.theme = t; savePrefs(); themeLabel();
+  });
+  if (mq && mq.addEventListener) mq.addEventListener('change', themeLabel);
+
+  /* ---------- Arranque ---------- */
+  if (prefs.theme === 'dark' || prefs.theme === 'light') document.documentElement.setAttribute('data-theme', prefs.theme);
+  themeLabel();
+  radios.forEach(function (r) { r.checked = (r.value === prefs.choice); });
+  if (!radios.some(function (r) { return r.checked; })) radios[1].checked = true;
+  customMin.value = prefs.custom || '';
+  syncChips();
+  setInsane(!!prefs.insane);
+
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) flush(); });
+
+  show('home');
+  if (pending()) openRecover();
+})();
+</script>
+
+</body>
+</html>

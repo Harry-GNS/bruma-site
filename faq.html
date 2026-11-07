@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Preguntas frecuentes de BRUMA.</title>
+<meta name="description" content="Respuestas sobre temporizadores, modo insano, sesiones perdidas, almacenamiento local, privacidad y descarga de textos.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Courier+Prime:wght@400;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script>try{var p=JSON.parse(localStorage.getItem('bruma:prefs')||'null');if(p&&(p.theme==='dark'||p.theme==='light'))document.documentElement.setAttribute('data-theme',p.theme)}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<a class="wordmark" href="index.html" aria-label="BRUMA., ir al inicio">BRUMA<span>.</span></a>
+<nav class="main-nav" aria-label="Páginas"><a href="acerca.html">Acerca</a><a href="faq.html" aria-current="page">Preguntas</a><a href="privacidad.html">Privacidad</a><a href="terminos.html">Términos</a><a href="contacto.html">Contacto</a><a href="cambios.html">Novedades</a><a href="apoyo.html">Apoyar</a></nav>
+</header>
+<main>
+<h1>Preguntas<span class="dot">.</span></h1>
+<p class="lead">Lo que suele preguntarse antes de escribir.</p>
+<section class="block"><h2>Temporizador</h2><div class="body"><details><summary>¿Cuándo empieza a correr el tiempo?</summary><p>Con tu primera letra. Pulsar Empezar abre el espacio de escritura, pero el reloj no arranca hasta que escribes un carácter.</p></details>
+<details><summary>¿Cuánto tiempo puedo elegir?</summary><p>3, 5, 10 o 20 minutos, o un tiempo propio entre 1 y 180 minutos con la opción Otro.</p></details>
+<details><summary>¿Puedo pausar?</summary><p>En el modo normal sí, con el botón Pausar. En el modo insano no se puede pausar.</p></details>
+<details><summary>¿Puedo añadir más tiempo?</summary><p>No. Cuando el reloj llega a cero termina la escritura y no hay prórroga. Después puedes leer y editar sin límite de tiempo.</p></details>
+<details><summary>¿Puedo borrar mientras escribo?</summary><p>Sí. Puedes borrar y retroceder como en cualquier bloc de notas.</p></details></div></section>
+<section class="block"><h2>Modo insano</h2><div class="body"><details><summary>¿Qué es el modo insano?</summary><p>Un modo con presión. Si dejas de escribir, empieza una cuenta de inactividad de 15 segundos. Cuando quedan 4 segundos aparece una cuenta regresiva grande. Si vuelves a escribir, la cuenta se reinicia. Si llega a cero, la sesión y su texto se borran.</p></details>
+<details><summary>¿Puedo borrar y retroceder en el modo insano?</summary><p>Sí, mientras mantengas la actividad. Borrar cuenta como escribir.</p></details>
+<details><summary>¿Se borra mi texto si termino el tiempo?</summary><p>No. Si llegas al final del temporizador, el texto se conserva. En la pantalla final no hay borrado por inactividad.</p></details></div></section>
+<section class="block"><h2>Sesiones y pérdida de texto</h2><div class="body"><details><summary>Recargué la página. ¿Perdí mi texto?</summary><p>No. Al volver aparece el aviso «Tienes una sesión pendiente. ¿Deseas continuar?». Con Continuar recuperas el texto y, tras una cuenta de 3, 2, 1, sigues escribiendo. Con Descartar se elimina la sesión. En el modo insano, la cuenta de inactividad vuelve a empezar desde 15 segundos al retomar.</p></details>
+<details><summary>¿Qué pasa si cierro la pestaña antes de terminar?</summary><p>Lo escrito queda guardado en tu navegador y la próxima vez que abras BRUMA. te pregunta si quieres continuar. El reloj no corre mientras la página está cerrada.</p></details>
+<details><summary>¿Cuándo se pierde un texto?</summary><p>Cuando la sesión se disuelve por inactividad en el modo insano, cuando eliges Descartar, cuando pulsas Borrar y volver en la pantalla final, cuando borras los datos del navegador y cuando cierras una ventana privada. Si quieres conservar algo, cópialo o descárgalo antes.</p></details>
+<details><summary>¿Hay historial de sesiones?</summary><p>No, a propósito. BRUMA. solo recuerda la sesión en curso.</p></details></div></section>
+<section class="block"><h2>Almacenamiento y privacidad</h2><div class="body"><details><summary>¿Dónde se guarda mi texto?</summary><p>En el almacenamiento local de tu navegador, dentro de tu dispositivo. No hay cuentas ni servidor que reciba lo que escribes.</p></details>
+<details><summary>¿Alguien puede leer lo que escribo?</summary><p>BRUMA. no envía tu texto a ningún sitio. Mientras haya una sesión pendiente, quien use tu dispositivo y tu navegador podría abrirla. Si compartes el equipo, descarta la sesión cuando termines.</p></details>
+<details><summary>¿Funciona sin conexión?</summary><p>Sí, una vez cargada la página. Escribir, pausar y recuperar una sesión no necesitan internet. Las tipografías vienen de Google Fonts, así que sin conexión se usa una fuente de máquina de escribir del sistema.</p></details>
+<details><summary>¿Dónde está el detalle completo?</summary><p>En la página de <a href="privacidad.html">Privacidad</a>.</p></details></div></section>
+<section class="block"><h2>El proyecto</h2><div class="body"><details><summary>¿BRUMA. es gratis?</summary><p>Sí. No hay anuncios, cuentas ni suscripciones. Si te sirve y quieres ayudar a mantenerla, puedes hacerlo desde <a href="apoyo.html">Apoyar</a>.</p></details>
+<details><summary>¿Quién la desarrolla?</summary><p>hgns. Puedes escribirle desde <a href="contacto.html">Contacto</a>.</p></details></div></section>
+<section class="block"><h2>Descarga y copia</h2><div class="body"><details><summary>¿Cómo me llevo mi texto?</summary><p>En la pantalla final usa Copiar para llevarlo al portapapeles o Descargar .txt para guardar un archivo. El archivo se llama <code>bruma-AAAA-MM-DD-HHMM.txt</code>.</p></details>
+<details><summary>¿Puedo editar el texto antes de descargarlo?</summary><p>Sí. El cuadro de la pantalla final es editable y la copia y la descarga usan lo que ves ahí.</p></details>
+<details><summary>¿Funciona en el móvil?</summary><p>Puedes abrirla, pero BRUMA. está pensada primero para escritorio y con teclado.</p></details></div></section>
+<section class="block"><h2>¿Otra duda?</h2><div class="body"><p>Escríbenos desde <a href="contacto.html">Contacto</a>.</p></div></section>
+</main>
+<footer class="foot"><p>BRUMA. Escribe antes de que se disuelva.</p><p>Versión 1.2</p></footer>
+</div>
+
+</body>
+</html>

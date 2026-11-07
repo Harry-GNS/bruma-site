@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Contacto con BRUMA.</title>
+<meta name="description" content="Reporta un error, envía una sugerencia o escribe al desarrollador de BRUMA.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Courier+Prime:wght@400;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script>try{var p=JSON.parse(localStorage.getItem('bruma:prefs')||'null');if(p&&(p.theme==='dark'||p.theme==='light'))document.documentElement.setAttribute('data-theme',p.theme)}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+<a class="wordmark" href="index.html" aria-label="BRUMA., ir al inicio">BRUMA<span>.</span></a>
+<nav class="main-nav" aria-label="Páginas"><a href="acerca.html">Acerca</a><a href="faq.html">Preguntas</a><a href="privacidad.html">Privacidad</a><a href="terminos.html">Términos</a><a href="contacto.html" aria-current="page">Contacto</a><a href="cambios.html">Novedades</a><a href="apoyo.html">Apoyar</a></nav>
+</header>
+<main>
+<h1>Contacto<span class="dot">.</span></h1>
+<p class="lead">Errores, ideas y dudas.</p>
+<section class="block"><h2>Escríbenos</h2><div class="body"><p>Para reportar un error, proponer una mejora o preguntar algo. Responde hgns, quien desarrolla BRUMA.</p><form class="form" id="cform" novalidate>
+<div class="field"><label for="ctype">Motivo</label>
+<select id="ctype"><option value="Error">Reportar un error</option><option value="Sugerencia">Enviar una sugerencia</option><option value="Otro">Otro asunto</option></select></div>
+<div class="field"><label for="cmsg">Mensaje</label><textarea id="cmsg" placeholder="Cuéntanos qué pasó o qué se te ocurre."></textarea>
+<p class="err" id="cerr" role="alert" hidden>Escribe un mensaje antes de abrir tu correo.</p></div>
+<div class="check"><input type="checkbox" id="cua"><label for="cua">Incluir los datos de mi navegador (útil para reportar errores)</label></div>
+<div class="row-btns"><button class="btn btn-primary" type="submit">Abrir en mi correo</button></div>
+<p id="cdone" role="status" hidden>Se abrió el borrador en tu programa de correo. Envíalo desde ahí. Si no se abrió, copia la dirección y escríbenos desde tu correo.</p>
+</form></div></section>
+<section class="block"><h2>Dirección</h2><div class="body"><p>Puedes escribir directamente a esta dirección.</p><div class="addr"><strong id="addr">harryguajan1@gmail.com</strong><button class="btn" id="ccopy" type="button">Copiar dirección</button><span id="cok" role="status" hidden>Copiada</span></div><p>No pegues aquí textos privados de tus sesiones. BRUMA. no los necesita para ayudarte.</p></div></section>
+<section class="block"><h2>Antes de escribir</h2><div class="body"><p>Revisa las <a href="faq.html">Preguntas</a>: puede que la respuesta ya esté ahí. Si reportas un error, cuéntanos qué hacías, qué esperabas que pasara y qué pasó.</p></div></section>
+</main>
+<footer class="foot"><p>BRUMA. Escribe antes de que se disuelva.</p><p>Versión 1.2</p></footer>
+</div>
+<script>
+(function(){
+  var ADDR=document.getElementById('addr').textContent.trim();
+  var f=document.getElementById('cform'),msg=document.getElementById('cmsg'),err=document.getElementById('cerr'),done=document.getElementById('cdone');
+  f.addEventListener('submit',function(e){
+    e.preventDefault(); done.hidden=true;
+    var m=msg.value.trim();
+    if(!m){err.hidden=false;msg.focus();return;}
+    err.hidden=true;
+    var type=document.getElementById('ctype').value;
+    var body=m; if(document.getElementById('cua').checked){body+='\n\n---\nNavegador: '+navigator.userAgent+'\nPantalla: '+screen.width+'x'+screen.height;}
+    window.location.href='mailto:'+ADDR+'?subject='+encodeURIComponent('BRUMA. '+type)+'&body='+encodeURIComponent(body);
+    done.hidden=false;
+  });
+  msg.addEventListener('input',function(){err.hidden=true;});
+  var btn=document.getElementById('ccopy'),ok=document.getElementById('cok'),t;
+  function say(){ok.hidden=false;clearTimeout(t);t=setTimeout(function(){ok.hidden=true;},2000);}
+  function fb(){var r=document.createRange();r.selectNodeContents(document.getElementById('addr'));var s=window.getSelection();s.removeAllRanges();s.addRange(r);try{if(document.execCommand('copy'))say();}catch(e){}}
+  btn.addEventListener('click',function(){ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ADDR).then(say,fb);}else{fb();} });
+})();
+</script>
+</body>
+</html>
