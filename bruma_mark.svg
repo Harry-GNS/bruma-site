@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1024" height="1024">
+  <title>BRUMA symbol</title>
+  <g fill="#EA4B12" shape-rendering="crispEdges">
+    <!-- Cursor -->
+    <path d="M64 72H126V440H64Z"/>
+    <!-- Text-like strokes -->
+    <path d="M158 82H390V122H158Z"/>
+    <path d="M158 158H344V198H158Z"/>
+    <path d="M158 234H390V274H158Z"/>
+    <path d="M158 310H344V350H158Z"/>
+    <path d="M158 386H390V426H158Z"/>
+    <!-- Pixel breakup: dense near the strokes, sparse toward the edge -->
+    <path d="M400 82h22v22h-22z M432 90h16v16h-16z M462 78h12v12h-12z M486 100h10v10h-10z"/>
+    <path d="M354 158h18v18h-18z M382 166h14v14h-14z M410 150h12v12h-12z M440 178h10v10h-10z M468 158h8v8h-8z"/>
+    <path d="M400 234h22v22h-22z M432 242h16v16h-16z M462 230h12v12h-12z M486 254h10v10h-10z"/>
+    <path d="M354 310h18v18h-18z M382 318h14v14h-14z M410 302h12v12h-12z M440 330h10v10h-10z M468 310h8v8h-8z"/>
+    <path d="M400 386h22v22h-22z M432 394h16v16h-16z M462 382h12v12h-12z M486 406h10v10h-10z"/>
+    <!-- Fine square fragments -->
+    <path d="M386 116h8v8h-8z M414 126h7v7h-7z M448 118h6v6h-6z M476 136h5v5h-5z
+             M372 194h7v7h-7z M402 204h6v6h-6z M430 194h5v5h-5z M458 210h5v5h-5z
+             M386 268h8v8h-8z M414 278h7v7h-7z M448 270h6v6h-6z M476 288h5v5h-5z
+             M372 346h7v7h-7z M402 356h6v6h-6z M430 346h5v5h-5z M458 362h5v5h-5z
+             M386 420h8v8h-8z M414 430h7v7h-7z M448 422h6v6h-6z M476 440h5v5h-5z"/>
+  </g>
+</svg>

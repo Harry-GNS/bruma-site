@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="BRUMA. Escribe antes de que se disuelva. Un espacio de escritura libre con temporizador, sin cuentas y sin estadísticas.">
+<link rel="icon" href="bruma_mark.svg" type="image/svg+xml">
 </head>
 <body>
 <title>BRUMA.</title>
@@ -13,12 +14,13 @@
 /* Concepto: un formulario mecanografiado. Filas separadas por reglas gruesas, todo alineado a la izquierda,
    un único momento de enfoque (la marca al cargar y el texto al revelarse). El naranja solo aparece donde pasa algo. */
 :root {
-  --bg: #EDEAE2;
-  --fg: #141311;
-  --muted: #58544C;
-  --accent: #EA4B12;
+  --bg: #141311;
+  --fg: #EDEAE2;
+  --muted: #A8A398;
+  --accent: #FF5B22;
   --on-accent: #141311;
-  --veil: rgba(237, 234, 226, 0.95);
+  --veil: rgba(20, 19, 17, 0.95);
+  color-scheme: dark;
   --display: "Archivo Black", "Arial Black", Impact, sans-serif;
   --text: "Courier Prime", "Courier New", Courier, monospace;
 }
@@ -41,6 +43,15 @@
   --on-accent: #141311;
   --veil: rgba(20, 19, 17, 0.95);
   color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #EDEAE2;
+  --fg: #141311;
+  --muted: #58544C;
+  --accent: #EA4B12;
+  --on-accent: #141311;
+  --veil: rgba(237, 234, 226, 0.95);
+  color-scheme: light;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -807,7 +818,7 @@ body {
   function currentTheme() {
     var a = document.documentElement.getAttribute('data-theme');
     if (a === 'dark' || a === 'light') return a;
-    return (mq && mq.matches) ? 'dark' : 'light';
+    return 'dark';
   }
   function themeLabel() {
     var dark = currentTheme() === 'dark';

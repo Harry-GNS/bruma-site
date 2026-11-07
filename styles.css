@@ -1,12 +1,14 @@
 /* BRUMA. Páginas informativas. Mismos tokens que la app. */
 :root {
-  --bg: #EDEAE2; --fg: #141311; --muted: #58544C; --accent: #EA4B12; --on-accent: #141311;
+  --bg: #141311; --fg: #EDEAE2; --muted: #A8A398; --accent: #FF5B22; --on-accent: #141311;
+  color-scheme: dark;
   --display: "Archivo Black", "Arial Black", Impact, sans-serif;
   --text: "Courier Prime", "Courier New", Courier, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) { --bg: #141311; --fg: #EDEAE2; --muted: #A8A398; --accent: #FF5B22; color-scheme: dark; }
 }
+:root[data-theme="light"] { --bg: #EDEAE2; --fg: #141311; --muted: #58544C; --accent: #EA4B12; --on-accent: #141311; color-scheme: light; }
 :root[data-theme="dark"] { --bg: #141311; --fg: #EDEAE2; --muted: #A8A398; --accent: #FF5B22; color-scheme: dark; }
 
 *, *::before, *::after { box-sizing: border-box; }
